@@ -1,0 +1,104 @@
+drop table WRITER cascade constraints;
+create table WRITER
+(
+    Wcode   char(4) not null,
+    Wname   varchar(30) not null,
+    Birth   date,
+    Master  varchar(60),
+    primary key (Wcode)
+);
+
+drop table ADMINISTER cascade constraints;
+create table ADMINISTER
+(
+    Aid     varchar(15) not null,
+    PW      varchar(15) not null,
+    Aname   varchar(30),
+    Sex     char,
+    Aphone  char(13),
+    primary key (Aid)
+);
+
+drop table BOOK cascade constraints;
+create table BOOK
+(
+    Bcode   char(4) not null,
+    Title   varchar(60) not null,
+    Price   int,
+    Ai      varchar(15) not null,
+    Wc      char(4) not null,
+    primary key (Bcode),
+    foreign key(Ai) references ADMINISTER(Aid),
+    foreign key(Wc) references WRITER(Wcode)
+);
+
+drop table CUSTOMER cascade constraints;
+create table CUSTOMER
+(
+    Cid     varchar(15) not null,
+    PW      varchar(15) not null,
+    Cname   varchar(30),
+    Sex     char,
+    Aphone  char(13),
+    primary key (Cid)
+);
+
+drop table SERIES cascade constraints;
+create table SERIES
+(
+    Bc      char(4) not null,
+    Sname   varchar(60),
+    Sorder   int,
+    primary key (Bc, Sname),
+    foreign key (Bc) references BOOK(Bcode)
+);
+
+drop table RATING cascade constraints;
+create table RATING
+(
+    Bc      char(4) not null,
+    Ci      varchar(15) not null,
+    Score   int check(Score between 0 and 10),
+    primary key (Bc, Ci),
+    foreign key (Bc) references BOOK(Bcode),
+    foreign key (Ci) references CUSTOMER(Cid)
+);
+
+drop table GENRE cascade constraints;
+create table GENRE
+(
+    Gcode      char(4) not null,
+    Gname      varchar(15) not null,
+    primary key (Gcode)
+);
+
+drop table OF_GENRE cascade constraints;
+create table OF_GENRE
+(
+    Bc      char(4) not null,
+    Gc      char(4) not null,
+    primary key (Bc, Gc),
+    foreign key (Bc) references BOOK(Bcode),
+    foreign key (Gc) references GENRE(Gcode)
+);
+
+drop table PUBLISHER cascade constraints;
+create table PUBLISHER
+(
+    Pcode       char(4) not null,
+    Pname       varchar(30) not null,
+    Founder     varchar(30),
+    Fyear       date,
+    primary key (Pcode)
+);
+
+drop table PUBLISHMENT cascade constraints;
+create table PUBLISHMENT
+(
+    Bc      char(4) not null,
+    Pc      char(4) not null,
+    Pyear   date,
+    primary key (Bc, Pc),
+    foreign key (Bc) references BOOK(Bcode),
+    foreign key (Pc) references PUBLISHER(Pcode)
+);

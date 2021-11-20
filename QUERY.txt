@@ -1,0 +1,84 @@
+--1
+--가격이 8000인 책 제목과 그 책의 가격
+select Title, Price from Book where Price = 8000;
+
+--살림 출판사의 Pcode와 설립자, 설립년도
+select Pcode, Pname, Founder, Fyear from Publisher where Pname = '열린책들';
+
+
+--2
+--'예서'라는 이름을 가진 고객이 평가한 책과 그 평가 점수
+select Title, Score from Book, Rating, Customer where Bcode = bc and Cid = Ci and Cname = '예서';
+
+--'살림' 출판사에서 출판한 책 제목과 출판 년도
+select Title, Pyear from Book, Publishment, Publisher where Bcode = bc and Pcode = Pc and Pname = '살림';
+
+
+--3
+--작가의 이름과 그 작가가 쓴 책들의 평점의 평균
+select Wname, ROUND(AVG(Score), 0) as Average from Writer, Book, Rating where Bcode = Bc and Wcode = Wc group by Wname;
+
+--각 출판사에서 출판한 책의 수가 10개 이상인 출판사의 이름과 그 수
+select Pname, COUNT(*) as Count_Book from Book, Publisher, Publishment where Bcode = Bc and Pcode = Pc group by Pname having COUNT(*) >= 10;
+
+
+--4
+--책 제목이 '돌이킬 수 없는 약속'인 책을 평가한 고객의 명단
+select Cname from Customer where Cid = (select Ci from Rating, Book where Ci = Cid and Bc = Bcode and Title = '돌이킬 수 없는 약속');
+
+--해리포터 시리즈인 책 제목과 가격
+select Title, Price from Book where Bcode = (select Bc from Series where Bc = Bcode and Sname = '해리포터');
+
+
+--5
+--판타지 장르에 해당하는 책 제목을 오름차순 정렬
+select Title from Book where exists ( select * from Genre, OF_Genre where Bc = Bcode and Gc = Gcode and Gname = '판타지') order by Title ASC;
+
+--평가되지 않은 책 제목
+select Title from Book where not exists ( select * from Rating where Bc = Bcode );
+
+
+--6
+--'전민희' 작가가 쓴 책 제목
+select Title from Book where Wc in (select Wcode from Writer where Wname = '전민희');
+
+--'임준성' 관리자가 관리하는 책 제목
+select Title from Book where Ai in (select Aid from Administer where Aname = '임준성');
+
+
+--7
+--'일본소설'에 해당하는 Bcode를 통해 10000원 보다 가격이 높은 책 제목과 가격
+with SOMEBOOKS as (select Bcode from Book, Genre, OF_Genre where Bcode = Bc and Gcode = Gc and Gname = '일본소설')
+select b1.Title, b1.Price from Book b1, SOMEBOOKS b2 where Price > 10000 and b1.Bcode = b2.Bcode;
+
+--2015년 12월 31일 보다 뒤에 출판한 책의 Bcode를 통해 14000원 보다 같거나 낮은 책 제목과 가격
+with SOMEBOOKS as (select bcode from Book, Publishment, Publisher where Bc = Bcode and Pc = Pcode and Pyear > '2015-12-31')
+select b1.Title, b1.Price from Book b1, SOMEBOOKS b2 where Price <= 14000 and b1.Bcode = b2.Bcode;
+
+
+--8
+--'아서 코난 도일'이라는 작가가 쓴 책을 가격 내림차순으로 책과 그 책의 가격
+select Title, Price from Book, Writer where Wc = Wcode and Wname = '아서 코난 도일' order by Price DESC;
+
+--책의 제목과 그 책의 가격과 출판사, 출판년도를 출판년도 오름차순으로 정렬
+select Title, price, Pname, Pyear from Book, Publishment, Publisher where Bc = Bcode and Pc = Pcode order by Pyear ASC;
+
+
+--9
+--작가이름과 작가가 쓴 책의 개수 오름차순
+select Wname, Count( * ) as Count_Book from Writer, Book where Wcode = Wc group by Wname order by Count_Book ASC;
+
+--평점 내림차순으로 책의 제목과 그 책의 평점
+select Title, ROUND(AVG(Score), 0) as AVERAGE_SCORE from Book, Rating where Bc = Bcode group by Title order by AVERAGE_SCORE DESC;
+
+
+--10
+--장르가 '추리' 책과 시리즈가 있는 책의 공통 부분
+(select Bcode, Title from Book, Series where Bcode = Bc)
+intersect
+(select Bcode, Title from Book, Genre, OF_Genre where Bcode = Bc and Gcode = Gc and Gname = '추리');
+
+--황금가지 출판사에서 출판하는 책중 SF장르에 속하는 책을 제외
+(select Bcode, Title from Book, Publisher, Publishment where Bcode = Bc and Pcode = Pc and Pname = '황금가지')
+minus
+(select Bcode, Title from Book, Genre, OF_Genre where Bcode = Bc and Gcode = Gc and Gname = 'SF');
